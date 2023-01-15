@@ -1,0 +1,13 @@
+.idea/
+.vscode/
+node_modules/
+build/
+tmp/
+temp/
+dist/
+logs/
+
+.env*
+*.lock
+*.log
+*.zip
