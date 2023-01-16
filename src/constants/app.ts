@@ -12,6 +12,11 @@ export const app = {
   FIXED_BUILD_CAR_PRICE: 2000,
 };
 
+export const hashEntityKeys = {
+  player: "player",
+  car: "car",
+};
+
 export const racePrizeBODifficultyScale = {
   //scale
   SCALE_1: 2 * app.FIXED_MAINTENANCE_PRICE,

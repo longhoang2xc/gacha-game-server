@@ -22,9 +22,9 @@ const all = async (
   }
 };
 
-const one = async (req: Request, res: Response) => {
-  // return TestRepository.findOne(req.params.id)
-};
+// const one = async (req: Request, res: Response) => {
+//   // return TestRepository.findOne(req.params.id)
+// };
 
 const create = async (
   req: Request,
@@ -32,7 +32,7 @@ const create = async (
 ): Promise<Response<Record<string, string>>> => {
   try {
     const body = req.body as ITestCreateBody;
-    const result = {};
+    const result = body;
     return res.send(
       withBaseResponse({
         success: true,
@@ -52,5 +52,4 @@ const create = async (
 export const testController = {
   create,
   all,
-  one,
 };

@@ -1,5 +1,6 @@
 // import { authLogin, authRegister, testSql } from "@server/controllers";
 
+import { authController } from "@app/controllers";
 import { RegisterDTO } from "@app/interfaces";
 import { dtoValidator } from "@app/middlewares";
 import { Router } from "express";
@@ -31,10 +32,10 @@ export const authRouter = Router();
  *          default: 0123456789
  *        password:
  *          type: string
- *          default: zxc
+ *          default: 123456789
  *        confirmPassword:
  *          type: string
- *          default: zxc
+ *          default: 123456789
  */
 /**
  * @openapi
@@ -57,7 +58,8 @@ export const authRouter = Router();
  *      400:
  *        description: Bad request
  */
-authRouter.post("/api-v1/register", dtoValidator(RegisterDTO, ["body"]), () => {
-  console.log("abc");
-  return null;
-});
+authRouter.post(
+  "/api-v1/register",
+  dtoValidator(RegisterDTO, ["body"]),
+  authController.authRegister,
+);

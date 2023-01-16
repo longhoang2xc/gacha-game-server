@@ -1,40 +1,56 @@
-import { logger, withBaseResponse } from "@app/helpers";
-import type { Request, Response, NextFunction } from "express";
-// register user new and not duplicated email
-export const authRegister = async (
-  req: Request,
-  res: Response,
-  _next: NextFunction,
-) => {
-  const body = req.body;
+import { app, hashEntityKeys } from "@app/constants";
+import {
+  getRedis,
+  logger,
+  setRedis,
+  setRedisHash,
+  withBaseResponse,
+} from "@app/helpers";
+import type { IPlayer } from "@app/interfaces";
+import type { Request, Response } from "express";
+import bcrypt from "bcryptjs";
 
+import { v4 as uuidv4 } from "uuid";
+// register user new and not duplicated email
+const authRegister = async (req: Request, res: Response) => {
+  const body = req.body;
   try {
     //find unique email
-    // const findWorker = await findEmployeeByKey(
-    //   "NormalizedEmail",
-    //   body?.email?.toString(),
-    // );
-    // if (findWorker?.success) {
-    //   res.send(
-    //     baseResponse({
-    //       success: false,
-    //       message: "Email already taken",
-    //     }),
-    //   );
-    //   return;
-    // }
+    const findEmail = await getRedis(body?.email);
 
-    // new user data parse to string
-    if (!!body?.email && !!body?.fullname && !!body?.phone) {
-      const resp = "a";
-      res.send(resp);
-      return;
+    if (findEmail) {
+      return res.send(
+        withBaseResponse({
+          success: false,
+          message: "email is already taken",
+          data: null,
+        }),
+      );
     }
+
+    const newId = uuidv4();
+
+    //set key pare email and id of player
+    await setRedis(body?.email, newId);
+
+    //hash the password
+    const saltRounds = 10;
+    const hashPassword = await bcrypt.hash(body?.password, saltRounds);
+
+    //prepare and save date to storage
+    delete body?.confirmPassword;
+    const data: IPlayer = {
+      bankBalance: app.INITIAL_FUND,
+      id: newId,
+      ...body,
+      password: hashPassword,
+    };
+    await setRedisHash(hashEntityKeys.player, newId, data);
 
     res.send(
       withBaseResponse({
         success: false,
-        message: "Please input required fields",
+        message: "Register success",
         data: null,
       }),
     );
@@ -55,4 +71,8 @@ export const authRegister = async (
     res.status(400).send("Bad Request");
     return;
   }
+};
+
+export const authController = {
+  authRegister,
 };

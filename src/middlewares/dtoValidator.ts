@@ -51,7 +51,7 @@ export const dtoValidator = <T extends ClassConstructor<any>>(
     await validate(objInstance).then(errors => {
       errorValidate = errors;
     });
-    console.log("errorValidate", errorValidate);
+
     if (errorValidate?.length > 0) {
       // const currentLocale =
       //   req.headers["X-CULTURE-CODE"] ?? req.headers["x-culture-code"];

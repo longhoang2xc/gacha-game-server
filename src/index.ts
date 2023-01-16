@@ -2,13 +2,8 @@ import "reflect-metadata";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { authRouter, testRouter } from "@app/routes";
-import {
-  logger,
-  swaggerDocs,
-  setAxiosCommonHeaders,
-  randomIntFromInterval,
-} from "./helpers";
+import { authRouter, testRouter, carRouter } from "@app/routes";
+import { logger, swaggerDocs, setAxiosCommonHeaders } from "./helpers";
 
 // dotenv init
 const dotenv = require("dotenv");
@@ -23,30 +18,6 @@ dotenv.config({
 export interface ProcessEnv {
   [key: string]: string | undefined;
 }
-
-const rollTheDice = () => {
-  // roll 4 dices
-  const dice = {
-    CAR_LEVEL_2: 30,
-    CAR_LEVEL_3: 20,
-    CAR_LEVEL_4: 10,
-    CAR_LEVEL_5: 5,
-  } as any;
-
-  let result = "CAR_LEVEL_1";
-
-  for (const key in dice) {
-    const isNextDice = randomIntFromInterval(1, 100);
-    console.log("isNextDice", isNextDice);
-    if (isNextDice > dice[key]) {
-      return result;
-    }
-    result = key;
-    console.log("result", result);
-  }
-  return result;
-};
-console.log("rollTheDice()", rollTheDice());
 
 try {
   // issues with timezone
@@ -65,7 +36,7 @@ try {
     next();
   });
   //Set all routes from routes folder
-  app.use("/", [authRouter]);
+  app.use("/", [authRouter, carRouter]);
 
   if (process.env["NODE_ENV"] === "development") {
     app.use("/", testRouter);

@@ -36,16 +36,18 @@ export const getOrSetCacheRedis = async (key: string, callBackFunc?: any) => {
   }
 };
 
-export const setCacheRedis = async (
+export const setRedis = async (
   key: string,
   freshData: any,
   expireTime?: number,
 ) => {
   try {
-    await redisClient.set(key, JSON.stringify(freshData), {
-      EX: expireTime ?? DEFAULT_EXPIRATION,
-    });
-    // console.log("Set Redis", setRedis);
+    if (expireTime) {
+      await redisClient.set(key, JSON.stringify(freshData), {
+        EX: expireTime,
+      });
+    }
+    await redisClient.set(key, JSON.stringify(freshData));
   } catch (error) {
     logger.log({
       level: "error",
@@ -56,17 +58,39 @@ export const setCacheRedis = async (
   }
 };
 
-export const getRedisMiddleware = async (key: string) => {
+export const getRedis = async (key: string) => {
   try {
     const data = await redisClient.get(key);
-    return data;
+    return JSON.parse(data ?? "");
   } catch (error) {
     logger.log({
       level: "error",
-      message: `Get Redis Middleware error: ${
+      message: `Get Redis error: ${
         typeof error === "object" ? JSON.stringify(error) : error
       }`,
     });
     return null;
+  }
+};
+
+export const setRedisHash = async (
+  key: string,
+  field: string,
+  freshData: any,
+) => {
+  try {
+    const setRedis = await redisClient.hSet(
+      key,
+      field,
+      JSON.stringify(freshData),
+    );
+    console.log("Set RedisHash", setRedis);
+  } catch (error) {
+    logger.log({
+      level: "error",
+      message: `Set RedisHash error: ${
+        typeof error === "object" ? JSON.stringify(error) : error
+      }`,
+    });
   }
 };
