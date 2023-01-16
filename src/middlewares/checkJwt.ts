@@ -1,6 +1,6 @@
 import { setCommonAuthorizationToken } from "@app/helpers/axios";
 import { axios, logger } from "@app/helpers";
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 // import config from "../config/config";
 
 export const checkJwt = async (
@@ -16,12 +16,12 @@ export const checkJwt = async (
   }
 
   const tokenArray = jwtToken.split(" ");
-  const token = tokenArray?.length ? tokenArray[1] : null;
-  setCommonAuthorizationToken(token);
+  const token = tokenArray?.length ? tokenArray[1] : "";
+  setCommonAuthorizationToken(token as string);
   //Try to validate the token and get data
   try {
     const result = await axios.get(
-      `${process.env.IDENTITY_URL}api-v1/accounts/validate-login-token`,
+      `${process.env["IDENTITY_URL"]}api-v1/accounts/validate-login-token`,
     );
     if (result?.data?.isTokenValid && result?.data?.userInfo?.id) {
       console.log(
@@ -40,9 +40,9 @@ export const checkJwt = async (
     //If token is not valid, respond with 401 (unauthorized)
     logger.log({
       level: "error",
-      message: `checkJwterror: ${JSON.stringify(
-        error?.response?.data ?? error,
-      )}`,
+      message: `checkJwt  error: ${
+        typeof error === "object" ? JSON.stringify(error) : error
+      }`,
     });
     res.status(401).send();
     return;

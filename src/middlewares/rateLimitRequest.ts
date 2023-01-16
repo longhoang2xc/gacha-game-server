@@ -16,7 +16,7 @@ export const apiPostLimiter = rateLimit({
   message: "Có lỗi xảy ra, vui lòng thử lại sau",
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  handler: (request, response, next, options) => {
+  handler: (request, response, _next, _options) => {
     const currentLocale =
       request.headers["X-CULTURE-CODE"] ?? request.headers["x-culture-code"];
 

@@ -2,7 +2,7 @@ import "reflect-metadata";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { testRouter } from "@app/routes";
+import { authRouter, testRouter } from "@app/routes";
 import {
   logger,
   swaggerDocs,
@@ -39,14 +39,14 @@ const rollTheDice = () => {
     const isNextDice = randomIntFromInterval(1, 100);
     console.log("isNextDice", isNextDice);
     if (isNextDice > dice[key]) {
-      return;
+      return result;
     }
     result = key;
     console.log("result", result);
   }
   return result;
 };
-rollTheDice();
+console.log("rollTheDice()", rollTheDice());
 
 try {
   // issues with timezone
@@ -65,7 +65,7 @@ try {
     next();
   });
   //Set all routes from routes folder
-  // app.use("/", [vLendingGeneralRouter]);
+  app.use("/", [authRouter]);
 
   if (process.env["NODE_ENV"] === "development") {
     app.use("/", testRouter);

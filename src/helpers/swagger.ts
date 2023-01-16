@@ -6,13 +6,13 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Vconomics Vlending REST API Docs",
+      title: "Gacha Game Server REST API Docs",
       version: "0.0.1",
     },
     basePath: "/",
     host:
       process.env["NODE_ENV"] === "development"
-        ? "localhost:5000"
+        ? "localhost:5001"
         : "sandbox-vlending.vconomics.io/",
     consumes: ["application/json"],
     produces: ["application/json"],

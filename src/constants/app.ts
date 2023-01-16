@@ -1,4 +1,9 @@
 import { randomIntFromInterval } from "@app/helpers";
+export const messageCode = {
+  SUCCESS: 1,
+  FAIL: -1,
+  ERROR: 0,
+};
 
 export const app = {
   DEFAULT_CURRENCY: "TMU",

@@ -1,5 +1,5 @@
-type TGender = "male" | "female" | "other";
-const GENDER_OPTIONS = ["male", "female", "other"];
+// type TGender = "male" | "female" | "other";
+// const GENDER_OPTIONS = ["male", "female", "other"];
 
 export interface ITestCreateBody {
   firstName: string;

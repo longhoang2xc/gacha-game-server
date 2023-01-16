@@ -8,7 +8,7 @@ if (process.env["NODE_ENV"] === "development") {
 } else {
 }
 
-redisClient.on("error", err => console.log("Redis Client Error", err));
+redisClient.on("error", (err: any) => console.log("Redis Client Error", err));
 
 redisClient.connect();
 

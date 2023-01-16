@@ -1,3 +1,4 @@
+import type express from "express";
 import { withBaseResponse } from "@app/helpers";
 import { ClassConstructor, plainToClass } from "class-transformer";
 import { validate } from "class-validator";
@@ -20,7 +21,11 @@ export const dtoValidator = <T extends ClassConstructor<any>>(
   dto: T,
   types: TTypes[],
 ) => {
-  return async (req, res, next) => {
+  return async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
     let obj = {};
     types.forEach((type: TTypes) => {
       switch (type) {
@@ -39,20 +44,22 @@ export const dtoValidator = <T extends ClassConstructor<any>>(
     });
     // transform the literal object to class object
     const objInstance = plainToClass(dto, obj);
-    // console.log("DTO Validator: ", objInstance);
-    let errorValidate;
+
+    let errorValidate: any[] = [];
+
     // validating and check the errors, throw the errors if exist
     await validate(objInstance).then(errors => {
       errorValidate = errors;
     });
-
+    console.log("errorValidate", errorValidate);
     if (errorValidate?.length > 0) {
-      const currentLocale =
-        req.headers["X-CULTURE-CODE"] ?? req.headers["x-culture-code"];
+      // const currentLocale =
+      //   req.headers["X-CULTURE-CODE"] ?? req.headers["x-culture-code"];
 
-      const err = errorValidate.map(({ property }) => property);
-      const mes =
-        currentLocale === "EN" ? `${err} validate fail` : `${err} xảy ra lỗi`;
+      const err = errorValidate.map(({ constraints }) =>
+        Object.values(constraints),
+      );
+      const mes = `${err} validation fail`;
 
       res.status(400).send(
         withBaseResponse({
@@ -64,7 +71,7 @@ export const dtoValidator = <T extends ClassConstructor<any>>(
       return;
     }
 
-    // implement your business logic using 'myParam'
+    // implement business logic
     next();
     return;
   };
