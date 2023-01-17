@@ -9,4 +9,5 @@ export interface IPlayer {
   phone: string;
   password: string;
   bankBalance: number;
+  isHaveFirstCar: boolean;
 }

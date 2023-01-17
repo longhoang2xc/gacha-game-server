@@ -61,7 +61,7 @@ export const setRedis = async (
 export const getRedis = async (key: string) => {
   try {
     const data = await redisClient.get(key);
-    return JSON.parse(data ?? "");
+    return data && JSON.parse(data);
   } catch (error) {
     logger.log({
       level: "error",
@@ -85,6 +85,20 @@ export const setRedisHash = async (
       JSON.stringify(freshData),
     );
     console.log("Set RedisHash", setRedis);
+  } catch (error) {
+    logger.log({
+      level: "error",
+      message: `Set RedisHash error: ${
+        typeof error === "object" ? JSON.stringify(error) : error
+      }`,
+    });
+  }
+};
+
+export const getRedisHash = async (key: string, field: string) => {
+  try {
+    const data = await redisClient.hGet(key, field);
+    return data && JSON.parse(data);
   } catch (error) {
     logger.log({
       level: "error",

@@ -2,21 +2,22 @@ import {
   IsEmail,
   IsPhoneNumber,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from "class-validator";
 import { Match } from "./match.decorator";
 
-export interface IRegister {
-  email: string;
-  nickName: string;
-  fullName: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-}
+// export interface IRegister {
+//   email: string;
+//   nickName: string;
+//   fullName: string;
+//   phone: string;
+//   password: string;
+//   confirmPassword: string;
+// }
 
-export class RegisterDTO implements IRegister {
+export class RegisterDTO {
   @IsEmail()
   email!: string;
 
@@ -45,4 +46,24 @@ export class RegisterDTO implements IRegister {
     message: "confirm password is not the same",
   })
   confirmPassword!: string;
+}
+
+export class LoginDTO {
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  @MinLength(8)
+  password!: string;
+}
+
+export class CarDTO {
+  @IsString()
+  @MaxLength(8)
+  carName!: string;
+}
+
+export class CarRaceDTO {
+  @IsUUID()
+  carId!: string;
 }

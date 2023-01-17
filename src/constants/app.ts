@@ -8,13 +8,16 @@ export const messageCode = {
 export const app = {
   DEFAULT_CURRENCY: "TMU",
   INITIAL_FUND: 1000,
+  INITIAL_CAR_DURABILITY: 5,
   FIXED_MAINTENANCE_PRICE: 100,
   FIXED_BUILD_CAR_PRICE: 2000,
+  MATCH_DURATION_MIN: 1,
 };
 
 export const hashEntityKeys = {
   player: "player",
   car: "car",
+  race: "race",
 };
 
 export const racePrizeBODifficultyScale = {
@@ -65,4 +68,12 @@ export const raceScaleWinRate = {
   SCALE_3: 30,
   SCALE_4: 20,
   SCALE_5: 10,
+};
+
+export const carWinRateBasedOnLuckLevel = {
+  CAR_LEVEL_1: 0,
+  CAR_LEVEL_2: 5,
+  CAR_LEVEL_3: randomIntFromInterval(5, 10),
+  CAR_LEVEL_4: randomIntFromInterval(10, 15),
+  CAR_LEVEL_5: randomIntFromInterval(15, 20),
 };

@@ -23,14 +23,4 @@ export const logger = createLogger({
     customFormat,
   ),
   transports: [transport],
-  // process.env.NODE_ENV === "development"
-  //   ? [
-  //       new transports.Console(),
-  //       new transports.File({ filename: "error.log", level: "error" }),
-  //       new transports.File({ filename: "info.log" }),
-  //     ]
-  //   : [
-  //       new transports.File({ filename: "error.log", level: "error" }),
-  //       new transports.File({ filename: "info.log" }),
-  //     ],
 });
