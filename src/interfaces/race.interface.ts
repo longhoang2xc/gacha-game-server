@@ -4,7 +4,8 @@ export interface IRace {
   carId: string;
   duration: number;
   dateStart: string | Date;
-  difficultScale: number;
+  difficultScale: string;
+  actualWinRate: number;
   isWon: boolean | null;
   prize: number;
 }

@@ -3,6 +3,7 @@ import {
   carWinRateBasedOnLuckLevel,
   hashEntityKeys,
   raceScaleWinRate,
+  raceWinPrize,
 } from "@app/constants";
 import {
   dayjs,
@@ -17,9 +18,24 @@ import type { ICar, IRace } from "@app/interfaces";
 import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 
+const diceDurability = {
+  DURA_AFTER_RACE_3: 25,
+  DURA_AFTER_RACE_2: 20,
+  DURA_AFTER_RACE_1: 15,
+  DURA_AFTER_RACE_0: 10,
+};
+
+const diceCarLevel = {
+  CAR_LEVEL_2: 30,
+  CAR_LEVEL_3: 20,
+  CAR_LEVEL_4: 10,
+  CAR_LEVEL_5: 5,
+};
+
 const buildCar = async (req: Request, res: Response) => {
-  const body = req.body;
   try {
+    const body = req.body;
+
     const playerId = req.headers["Player-Id"] as string;
 
     const dataPlayer = await getRedisHash(hashEntityKeys.player, playerId);
@@ -49,15 +65,8 @@ const buildCar = async (req: Request, res: Response) => {
       });
     }
 
-    const dice = {
-      CAR_LEVEL_2: 30,
-      CAR_LEVEL_3: 20,
-      CAR_LEVEL_4: 10,
-      CAR_LEVEL_5: 5,
-    };
-
     // roll dice the car level
-    const carLevel = rollTheDice(dice);
+    const carLevel = rollTheDice(diceCarLevel);
     const newId = uuidv4();
 
     //prepare and save date to storage
@@ -67,6 +76,7 @@ const buildCar = async (req: Request, res: Response) => {
       id: newId,
       luckLevel: carLevel,
       playerId: playerId,
+      isRacing: false,
     };
     await setRedisHash(hashEntityKeys.car, newId, data);
 
@@ -92,10 +102,24 @@ const buildCar = async (req: Request, res: Response) => {
 };
 
 const raceCar = async (req: Request, res: Response) => {
-  const body = req.body;
   try {
+    const body = req.body;
+
+    const playerId = req.headers["Player-Id"] as string;
+
     const dataCar = await getRedisHash(hashEntityKeys.car, body.carId);
 
+    // not that player car
+    if (playerId !== dataCar?.playerId) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "this isn't your car",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
     // check car durability
     if (dataCar?.durability < 5) {
       res.send(
@@ -107,13 +131,25 @@ const raceCar = async (req: Request, res: Response) => {
       );
       return;
     }
+    if (dataCar?.isRacing) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "car must finish previous race",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
 
-    const playerId = req.headers["Player-Id"] as string;
+    await setRedisHash(hashEntityKeys.car, dataCar.id, {
+      ...dataCar,
+      isRacing: true,
+    });
 
     const dataPlayer = await getRedisHash(hashEntityKeys.player, playerId);
-    console.log("dataPlayer", dataPlayer, "dataCar", dataCar);
 
-    // from difficult Level to get the base win rate of the Level
+    // from difficult Level to get the base win rate
     const difficultLevel =
       `SCALE_${body?.difficultLevel}` as keyof typeof raceScaleWinRate;
 
@@ -121,55 +157,63 @@ const raceCar = async (req: Request, res: Response) => {
     const carLuckLevelNow =
       dataCar?.luckLevel as keyof typeof carWinRateBasedOnLuckLevel;
 
-    console.log(
-      " raceScaleWinRate[difficultLevel]",
-      raceScaleWinRate[difficultLevel],
-      "carWinRateBasedOnLuckLevel[carLuckLevelNow]",
-      carWinRateBasedOnLuckLevel[carLuckLevelNow],
-    );
-
     const winRate =
       raceScaleWinRate[difficultLevel] +
-      carWinRateBasedOnLuckLevel[carLuckLevelNow];
+      carWinRateBasedOnLuckLevel()[carLuckLevelNow];
 
-    console.log("winRate", winRate);
-    const rollTheWinning = randomIntFromInterval(0, winRate);
+    const rollTheWinning = randomIntFromInterval(0, 100);
+
     const isWinOrNot = rollTheWinning <= winRate ? true : false;
 
-    const dice = {
-      DURA_AFTER_RACE_4: 25,
-      DURA_AFTER_RACE_3: 20,
-      DURA_AFTER_RACE_2: 15,
-      DURA_AFTER_RACE_1: 10,
-    } as any;
-
-    // roll the durability af race then update to car
-    const durabilityAfterRace = rollTheDice(dice);
-
-    console.log(
-      "durabilityAfterRace",
-      durabilityAfterRace,
-      durabilityAfterRace.replace("DURA_AFTER_RACE_", ""),
-    );
-
-    const newId = uuidv4();
+    // prepare needed data for race
+    const newRaceId = uuidv4();
     const now = dayjs().utc() as unknown as string;
+    const racePrize = isWinOrNot
+      ? raceWinPrize[body?.difficultLevel as keyof typeof raceWinPrize]
+      : 0;
     //prepare and save date to storage
     const data: IRace = {
-      id: newId,
+      id: newRaceId,
+      playerId: playerId,
       carId: dataCar?.id,
       dateStart: now,
-      difficultScale: winRate,
+      difficultScale: difficultLevel,
+      actualWinRate: winRate,
       duration: app.MATCH_DURATION_MIN,
-      isWon: isWinOrNot,
+      isWon: false,
       prize: 0,
-      playerId: playerId,
     };
-    console.log("data reace", data);
-    // await setRedisHash(hashEntityKeys.race, newId, data);
+    await setRedisHash(hashEntityKeys.race, newRaceId, data);
 
-    setTimeout(() => {
-      //update the race, player balance and car
+    //update the race, player balance and car
+    setTimeout(async () => {
+      // roll the durability after race then update to car
+      const durabilityAfter = Number(
+        rollTheDice(diceDurability, "DURA_AFTER_RACE_4").replace(
+          "DURA_AFTER_RACE_",
+          "",
+        ),
+      );
+      await setRedisHash(hashEntityKeys.car, dataCar.id, {
+        ...dataCar,
+        durability: durabilityAfter,
+        isRacing: false,
+      });
+
+      // update race
+      await setRedisHash(hashEntityKeys.race, newRaceId, {
+        ...data,
+        isWon: isWinOrNot,
+        prize: racePrize,
+      });
+
+      if (isWinOrNot && racePrize > 0) {
+        // update player bank balance
+        await setRedisHash(hashEntityKeys.player, playerId, {
+          ...dataPlayer,
+          bankBalance: (dataPlayer?.bankBalance ?? 0) + racePrize,
+        });
+      }
     }, app.MATCH_DURATION_MIN * 60000);
 
     res.send(
@@ -193,7 +237,100 @@ const raceCar = async (req: Request, res: Response) => {
   }
 };
 
+const maintainCar = async (req: Request, res: Response) => {
+  try {
+    const body = req.body;
+
+    const playerId = req.headers["Player-Id"] as string;
+
+    const dataCar = await getRedisHash(hashEntityKeys.car, body.carId);
+
+    // not that player car
+    if (playerId !== dataCar?.playerId) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "this isn't your car",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
+    // check car durability
+    if (dataCar?.durability === 5) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "your car in perfect condition",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
+
+    const dataPlayer = await getRedisHash(hashEntityKeys.player, playerId);
+
+    const maintainLevel = 5 - Number(dataCar?.durability);
+    if (maintainLevel < 0 || isNaN(maintainLevel)) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "unexpected error, please contact support team",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
+    // update player bank balance
+    if (
+      dataPlayer?.bankBalance - maintainLevel * app.FIXED_MAINTENANCE_PRICE <
+      0
+    ) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "insufficient bank balance",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
+
+    await setRedisHash(hashEntityKeys.player, playerId, {
+      ...dataPlayer,
+      bankBalance:
+        dataPlayer?.bankBalance - maintainLevel * app.FIXED_MAINTENANCE_PRICE,
+    });
+
+    //update car durability
+    await setRedisHash(hashEntityKeys.car, dataCar.id, {
+      ...dataCar,
+      durability: 5,
+    });
+
+    res.send(
+      withBaseResponse({
+        success: false,
+        message: "maintain car success",
+        data: {},
+      }),
+    );
+    return;
+  } catch (error: any) {
+    console.log(`build car error`, error);
+    logger.log({
+      level: "error",
+      message: `build car error: ${
+        typeof error === "object" ? JSON.stringify(error) : error
+      }`,
+    });
+    res.status(400).send("Bad Request");
+    return;
+  }
+};
+
 export const carController = {
   buildCar,
   raceCar,
+  maintainCar,
 };

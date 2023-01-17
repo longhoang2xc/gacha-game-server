@@ -13,7 +13,6 @@ dotenv.config({
       ? ".env.development"
       : ".env.production",
 });
-
 // (() => {})();
 export interface ProcessEnv {
   [key: string]: string | undefined;

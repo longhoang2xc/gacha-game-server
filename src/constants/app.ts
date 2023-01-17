@@ -11,7 +11,7 @@ export const app = {
   INITIAL_CAR_DURABILITY: 5,
   FIXED_MAINTENANCE_PRICE: 100,
   FIXED_BUILD_CAR_PRICE: 2000,
-  MATCH_DURATION_MIN: 1,
+  MATCH_DURATION_MIN: 0.1,
 };
 
 export const hashEntityKeys = {
@@ -70,10 +70,20 @@ export const raceScaleWinRate = {
   SCALE_5: 10,
 };
 
-export const carWinRateBasedOnLuckLevel = {
-  CAR_LEVEL_1: 0,
-  CAR_LEVEL_2: 5,
-  CAR_LEVEL_3: randomIntFromInterval(5, 10),
-  CAR_LEVEL_4: randomIntFromInterval(10, 15),
-  CAR_LEVEL_5: randomIntFromInterval(15, 20),
+export const raceWinPrize = {
+  1: 2 * app.FIXED_MAINTENANCE_PRICE,
+  2: 3 * app.FIXED_MAINTENANCE_PRICE,
+  3: 4 * app.FIXED_MAINTENANCE_PRICE,
+  4: 5 * app.FIXED_MAINTENANCE_PRICE,
+  5: 10 * app.FIXED_MAINTENANCE_PRICE,
+};
+
+export const carWinRateBasedOnLuckLevel = () => {
+  return {
+    CAR_LEVEL_1: 0,
+    CAR_LEVEL_2: 5,
+    CAR_LEVEL_3: randomIntFromInterval(5, 10),
+    CAR_LEVEL_4: randomIntFromInterval(10, 15),
+    CAR_LEVEL_5: randomIntFromInterval(15, 20),
+  };
 };

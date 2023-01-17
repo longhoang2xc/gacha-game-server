@@ -4,4 +4,5 @@ export interface ICar {
   carName: string;
   durability: number;
   luckLevel: string;
+  isRacing: boolean;
 }

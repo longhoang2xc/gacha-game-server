@@ -1,6 +1,6 @@
 import { randomIntFromInterval } from "./randomInt";
 
-export const rollTheDice = (dice: any) => {
+export const rollTheDice = (dice: any, initialValueResult?: string) => {
   // roll 4 dices
   // const dice = {
   //   CAR_LEVEL_2: 30,
@@ -9,7 +9,7 @@ export const rollTheDice = (dice: any) => {
   //   CAR_LEVEL_5: 5,
   // } as any;
 
-  let result = "CAR_LEVEL_1";
+  let result = initialValueResult ?? "CAR_LEVEL_1";
 
   for (const key in dice) {
     const isNextDice = randomIntFromInterval(1, 100);

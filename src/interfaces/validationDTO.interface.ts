@@ -1,12 +1,15 @@
 import {
   IsEmail,
+  IsInt,
   IsPhoneNumber,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from "class-validator";
-import { Match } from "./match.decorator";
+import { Match } from "./customValidatorDTO/match.decorator";
 
 // export interface IRegister {
 //   email: string;
@@ -64,6 +67,15 @@ export class CarDTO {
 }
 
 export class CarRaceDTO {
+  @IsUUID()
+  carId!: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  difficultLevel!: number;
+}
+export class CarMaintainDTO {
   @IsUUID()
   carId!: string;
 }
