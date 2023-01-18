@@ -19,7 +19,7 @@ const createStaking = async (req: Request, res: Response) => {
 
     const dataPlayer = await getRedisHash(hashEntityKeys.player, playerId);
 
-    // not that player car
+    // check balance
     if (dataPlayer?.bankBalance < body?.amount) {
       res.send(
         withBaseResponse({
@@ -135,12 +135,13 @@ const withdrawStakingToBank = async (req: Request, res: Response) => {
       dataPlayer?.investingAccountId,
     );
 
+    // check invest account amount
     if (body.amount > investingAccount?.amount) {
       res.send(
         withBaseResponse({
           success: true,
           message: "investing account is insufficient",
-          data: {},
+          data: null,
         }),
       );
       return;

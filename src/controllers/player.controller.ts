@@ -1,6 +1,5 @@
 import { hashEntityKeys } from "@app/constants";
 import { getRedisHash, logger, withBaseResponse } from "@app/helpers";
-import type { IInvestingAccount } from "@app/interfaces";
 import type { Request, Response } from "express";
 
 const getInfo = async (req: Request, res: Response) => {
@@ -8,7 +7,7 @@ const getInfo = async (req: Request, res: Response) => {
     const playerId = req.headers["Player-Id"] as string;
 
     const dataPlayer = await getRedisHash(hashEntityKeys.player, playerId);
-    const investingAccount: IInvestingAccount = await getRedisHash(
+    const investingAccount = await getRedisHash(
       hashEntityKeys.investingAccount,
       dataPlayer?.investingAccountId,
     );

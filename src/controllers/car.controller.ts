@@ -130,6 +130,7 @@ const raceCar = async (req: Request, res: Response) => {
       );
       return;
     }
+    // check is racing
     if (dataCar?.isRacing) {
       res.send(
         withBaseResponse({
