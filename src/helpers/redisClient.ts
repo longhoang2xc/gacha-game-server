@@ -3,7 +3,7 @@ import { logger } from "./logger";
 
 const DEFAULT_EXPIRATION = 604800000;
 
-let redisClient = createClient();
+export const redisClient = createClient();
 if (process.env["NODE_ENV"] === "development") {
 } else {
 }

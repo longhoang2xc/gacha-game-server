@@ -1,5 +1,10 @@
 import { carController } from "@app/controllers";
-import { CarDTO, CarRaceDTO, CarMaintainDTO } from "@app/interfaces";
+import {
+  CarDTO,
+  CarRaceDTO,
+  CarMaintainDTO,
+  CarInfoDTO,
+} from "@app/interfaces";
 import { checkJwt, dtoValidator } from "@app/middlewares";
 import { Router } from "express";
 
@@ -149,4 +154,8 @@ carRouter.post(
  *      400:
  *        description: Bad request
  */
-carRouter.get(`/api-v1/car/:id`, [], carController.raceCar);
+carRouter.get(
+  `/api-v1/car/:id`,
+  [checkJwt, dtoValidator(CarInfoDTO, ["params"])],
+  carController.infoCar,
+);

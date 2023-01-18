@@ -32,6 +32,7 @@ const authRegister = async (req: Request, res: Response) => {
     }
 
     const newId = uuidv4();
+    const investingAccountId = uuidv4();
 
     //set key pare email and id of player
     await setRedis(body?.email, newId);
@@ -48,24 +49,34 @@ const authRegister = async (req: Request, res: Response) => {
       ...body,
       password: hashPassword,
       isHaveFirstCar: false,
+      investingAccountId: investingAccountId,
     };
     await setRedisHash(hashEntityKeys.player, newId, data);
 
+    //create investing account
+    await setRedisHash(hashEntityKeys.investingAccount, investingAccountId, {
+      id: investingAccountId,
+      playerId: newId,
+      amount: 0,
+    });
+
     res.send(
       withBaseResponse({
-        success: false,
+        success: true,
         message: "register success",
-        data: null,
+        data: {
+          id: newId,
+          email: body.email,
+          nickName: body.nickName,
+          fullName: body.fullName,
+          phone: body.phone,
+          isHaveFirstCar: false,
+          investingAccountId: investingAccountId,
+        },
       }),
     );
     return;
   } catch (error: any) {
-    console.log(
-      `Register error: ${
-        typeof error === "object" ? JSON.stringify(error) : error
-      }`,
-      error,
-    );
     logger.log({
       level: "error",
       message: `Register error: ${
@@ -119,9 +130,10 @@ const authLogin = async (req: Request, res: Response) => {
       { expiresIn: "7d" },
     );
 
+    delete dataPlayer.password;
     res.send(
       withBaseResponse({
-        success: false,
+        success: true,
         message: "login success",
         data: {
           token,
@@ -131,15 +143,9 @@ const authLogin = async (req: Request, res: Response) => {
     );
     return;
   } catch (error: any) {
-    console.log(
-      `Register error: ${
-        typeof error === "object" ? JSON.stringify(error) : error
-      }`,
-      error,
-    );
     logger.log({
       level: "error",
-      message: `Register error: ${
+      message: `login error: ${
         typeof error === "object" ? JSON.stringify(error) : error
       }`,
     });

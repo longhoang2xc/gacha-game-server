@@ -10,4 +10,5 @@ export interface IPlayer {
   password: string;
   bankBalance: number;
   isHaveFirstCar: boolean;
+  investingAccountId: string;
 }

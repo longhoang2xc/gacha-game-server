@@ -1,4 +1,6 @@
 import {
+  IsBoolean,
+  IsDivisibleBy,
   IsEmail,
   IsInt,
   IsPhoneNumber,
@@ -10,15 +12,6 @@ import {
   MinLength,
 } from "class-validator";
 import { Match } from "./customValidatorDTO/match.decorator";
-
-// export interface IRegister {
-//   email: string;
-//   nickName: string;
-//   fullName: string;
-//   phone: string;
-//   password: string;
-//   confirmPassword: string;
-// }
 
 export class RegisterDTO {
   @IsEmail()
@@ -78,4 +71,30 @@ export class CarRaceDTO {
 export class CarMaintainDTO {
   @IsUUID()
   carId!: string;
+}
+
+export class CarInfoDTO {
+  @IsUUID()
+  id!: string;
+}
+
+export class StakingDTO {
+  @IsInt()
+  @Min(100)
+  @IsDivisibleBy(100)
+  amount!: number;
+
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  stakingLevel!: string;
+}
+
+export class StakingWithdrawDTO {
+  @IsInt()
+  @Min(100)
+  amount!: number;
+
+  @IsBoolean()
+  withdrawFull!: boolean;
 }

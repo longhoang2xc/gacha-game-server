@@ -1,6 +1,7 @@
 export interface IStakingFund {
   id: string;
   playerId: string;
+  investingAccountId: string;
   amount: number;
   scale: string;
   returnAmount: number; //profit
@@ -10,4 +11,5 @@ export interface IStakingFund {
   lossInitialFundPercent: number;
   dateStart: string | Date;
   dateEnd: string | Date;
+  isClosed: boolean;
 }

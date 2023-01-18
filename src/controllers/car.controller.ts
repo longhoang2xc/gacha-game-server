@@ -82,14 +82,13 @@ const buildCar = async (req: Request, res: Response) => {
 
     res.send(
       withBaseResponse({
-        success: false,
+        success: true,
         message: "create car success",
         data: data,
       }),
     );
     return;
   } catch (error: any) {
-    console.log(`build car error`, error);
     logger.log({
       level: "error",
       message: `build car error: ${
@@ -161,7 +160,7 @@ const raceCar = async (req: Request, res: Response) => {
       raceScaleWinRate[difficultLevel] +
       carWinRateBasedOnLuckLevel()[carLuckLevelNow];
 
-    const rollTheWinning = randomIntFromInterval(0, 100);
+    const rollTheWinning = randomIntFromInterval(1, 100);
 
     const isWinOrNot = rollTheWinning <= winRate ? true : false;
 
@@ -218,17 +217,16 @@ const raceCar = async (req: Request, res: Response) => {
 
     res.send(
       withBaseResponse({
-        success: false,
+        success: true,
         message: "start race success",
         data: data,
       }),
     );
     return;
   } catch (error: any) {
-    console.log(`build car error`, error);
     logger.log({
       level: "error",
-      message: `build car error: ${
+      message: `race car error: ${
         typeof error === "object" ? JSON.stringify(error) : error
       }`,
     });
@@ -281,7 +279,7 @@ const maintainCar = async (req: Request, res: Response) => {
       );
       return;
     }
-    // update player bank balance
+    // check player bank balance
     if (
       dataPlayer?.bankBalance - maintainLevel * app.FIXED_MAINTENANCE_PRICE <
       0
@@ -295,7 +293,7 @@ const maintainCar = async (req: Request, res: Response) => {
       );
       return;
     }
-
+    // update player bank balance
     await setRedisHash(hashEntityKeys.player, playerId, {
       ...dataPlayer,
       bankBalance:
@@ -310,17 +308,59 @@ const maintainCar = async (req: Request, res: Response) => {
 
     res.send(
       withBaseResponse({
-        success: false,
+        success: true,
         message: "maintain car success",
-        data: {},
+        data: {
+          ...dataCar,
+          durability: 5,
+        },
       }),
     );
     return;
   } catch (error: any) {
-    console.log(`build car error`, error);
     logger.log({
       level: "error",
-      message: `build car error: ${
+      message: `maintain car error: ${
+        typeof error === "object" ? JSON.stringify(error) : error
+      }`,
+    });
+    res.status(400).send("Bad Request");
+    return;
+  }
+};
+
+const infoCar = async (req: Request, res: Response) => {
+  try {
+    const id = req.params["id"];
+
+    const playerId = req.headers["Player-Id"] as string;
+
+    const dataCar = await getRedisHash(hashEntityKeys.car, id || "");
+
+    // not that player car
+    if (playerId !== dataCar?.playerId) {
+      res.send(
+        withBaseResponse({
+          success: false,
+          message: "this isn't your car",
+          data: dataCar,
+        }),
+      );
+      return;
+    }
+
+    res.send(
+      withBaseResponse({
+        success: true,
+        message: "maintain car success",
+        data: dataCar,
+      }),
+    );
+    return;
+  } catch (error: any) {
+    logger.log({
+      level: "error",
+      message: `get info car error: ${
         typeof error === "object" ? JSON.stringify(error) : error
       }`,
     });
@@ -333,4 +373,5 @@ export const carController = {
   buildCar,
   raceCar,
   maintainCar,
+  infoCar,
 };

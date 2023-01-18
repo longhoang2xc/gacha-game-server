@@ -2,8 +2,15 @@ import "reflect-metadata";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { authRouter, testRouter, carRouter } from "@app/routes";
+import {
+  authRouter,
+  testRouter,
+  carRouter,
+  stakingRouter,
+  playerRouter,
+} from "@app/routes";
 import { logger, swaggerDocs, setAxiosCommonHeaders } from "./helpers";
+import { handleFinishedStakingFund } from "./cronjobs";
 
 // dotenv init
 const dotenv = require("dotenv");
@@ -35,7 +42,7 @@ try {
     next();
   });
   //Set all routes from routes folder
-  app.use("/", [authRouter, carRouter]);
+  app.use("/", [authRouter, carRouter, stakingRouter, playerRouter]);
 
   if (process.env["NODE_ENV"] === "development") {
     app.use("/", testRouter);
@@ -50,7 +57,10 @@ try {
     });
     console.log(`Server started on port ${port}! `);
   });
+
   // cronjobs
+  handleFinishedStakingFund.start();
+  // handleFinishedStakingFund.stop();
 } catch (error) {
   console.log(
     `Server start fail error: ${
